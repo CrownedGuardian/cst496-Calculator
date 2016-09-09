@@ -22,24 +22,36 @@ class ViewController: UIViewController { //Superclass (Inheritance)
 
     @IBOutlet var display: UILabel!
     
-    var userIsInMiddleOfTypingANumber = false
+    var userIsInMiddleOfTypingANumber = false, hasDecimalNumber = false
+    
+    var brain = CalculatorBrain()
     
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         if userIsInMiddleOfTypingANumber {
+            if brain.hasDecimalPoint(digit) {
+                if hasDecimalNumber {
+                    display.text = "Error"
+                    return
+                } else {
+                    hasDecimalNumber = true
+                }
+            }
             display.text = display.text! + digit
         } else {
             display.text = digit
             userIsInMiddleOfTypingANumber = true
         }
     }
-
-    var operandStack = Array<Double>()
     
     @IBAction func enter() {
         userIsInMiddleOfTypingANumber = false
-        operandStack.append(displayValue)
-        print("operandStack = \(operandStack)")
+        hasDecimalNumber = false
+        if let result = brain.pushOperand(displayValue) {
+            displayValue = result
+        } else {
+            displayValue = 0
+        }
     }
     
     var displayValue: Double {
@@ -52,35 +64,20 @@ class ViewController: UIViewController { //Superclass (Inheritance)
         }
     }
     @IBAction func operate(sender: UIButton) {
-        let operation = sender.currentTitle!
         if userIsInMiddleOfTypingANumber {
             enter()
         }
-        switch operation {
-            case "+": performOperation {$0 + $1}
-            case "-": performOperation {$1 - $0}
-            case "✕": performOperation {$0 * $1}
-            case "/": performOperation {$1 / $0}
-            case "sqrt": performOperation {sqrt($0)}
-            case "π":
-                displayValue = M_PI
-                enter()
-            default: break
+        if let operation = sender.currentTitle {
+            if let result = brain.performOperation(operation) {
+                displayValue = result
+            } else {
+                displayValue = 0
+            }
         }
     }
-    
-    func performOperation(operation: (Double, Double) -> Double) {
-        if operandStack.count >= 2 {
-            displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
-            enter()
-        }
-    }
-    
-    private func performOperation(operation: Double -> Double) {
-        if operandStack.count >= 1 {
-            displayValue = operation(operandStack.removeLast())
-            enter()
-        }
+    @IBAction func clearView() {
+        hasDecimalNumber = false
+        displayValue = brain.clear()
     }
     
 }
