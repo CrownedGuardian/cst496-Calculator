@@ -44,6 +44,7 @@ class CalculatorBrain
         learnOp(Op.UnaryOperation("√", sqrt))
         learnOp(Op.UnaryOperation("sin", sin))
         learnOp(Op.UnaryOperation("cos", cos))
+        
     }
     
     private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
@@ -101,5 +102,16 @@ class CalculatorBrain
             return true
         }
         return false
+    }
+    
+    func isPI(digit: String) -> Bool {
+        if digit == "π" {
+            return true
+        }
+        return false
+    }
+    
+    func getPI() -> Double{
+        return M_PI
     }
 }

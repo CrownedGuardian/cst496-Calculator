@@ -21,6 +21,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     }
 
     @IBOutlet var display: UILabel!
+    @IBOutlet var historyDisplay: UITextView!
     
     var userIsInMiddleOfTypingANumber = false, hasDecimalNumber = false
     
@@ -29,7 +30,13 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         if userIsInMiddleOfTypingANumber {
-            if brain.hasDecimalPoint(digit) {
+            if brain.isPI(digit) {
+                enter()
+                displayValue = brain.getPI()
+                enter()
+                return
+            }
+            else if brain.hasDecimalPoint(digit) {
                 if hasDecimalNumber {
                     display.text = "Error"
                     return
@@ -39,6 +46,11 @@ class ViewController: UIViewController { //Superclass (Inheritance)
             }
             display.text = display.text! + digit
         } else {
+            if brain.isPI(digit) {
+                displayValue = brain.getPI()
+                enter()
+                return
+            }
             display.text = digit
             userIsInMiddleOfTypingANumber = true
         }
@@ -52,6 +64,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
         } else {
             displayValue = 0
         }
+        historyDisplay.insertText("\(displayValue)\n")
     }
     
     var displayValue: Double {
@@ -79,6 +92,5 @@ class ViewController: UIViewController { //Superclass (Inheritance)
         hasDecimalNumber = false
         displayValue = brain.clear()
     }
-    
 }
 
