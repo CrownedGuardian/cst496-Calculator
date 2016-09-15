@@ -31,6 +31,7 @@ class CalculatorBrain
     
     private var opStack = [Op]()    //Array
     
+    
     private var knownOps = [String:Op]() //Dictionary
     
     init() {
@@ -45,6 +46,27 @@ class CalculatorBrain
         learnOp(Op.UnaryOperation("sin", sin))
         learnOp(Op.UnaryOperation("cos", cos))
         
+    }
+    
+    typealias PropertyList = AnyObject
+    
+    var program: PropertyList {    //guaranteed to be a PropertyList
+        get {
+            return opStack.map {$0.description} //returns array of every op's description
+        }
+        set {
+            if let opSymbols = newValue as? Array<String> { //casting
+                var newOpStack = [Op]()
+                for opSymbol in opSymbols {
+                    if let op = knownOps[opSymbol] {
+                        newOpStack.append(op)
+                    } else if let operand = NSNumberFormatter().numberFromString(opSymbol)?.doubleValue {
+                        newOpStack.append(.Operand(operand))
+                    }
+                }
+                opStack = newOpStack
+            }
+        }
     }
     
     private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
@@ -113,5 +135,9 @@ class CalculatorBrain
     
     func getPI() -> Double{
         return M_PI
+    }
+    
+    func getHistory() -> String{
+        return opStack.description
     }
 }

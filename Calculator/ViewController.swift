@@ -21,7 +21,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     }
 
     @IBOutlet var display: UILabel!
-    @IBOutlet var historyDisplay: UITextView!
+    @IBOutlet var history: UILabel!
     
     var userIsInMiddleOfTypingANumber = false, hasDecimalNumber = false
     
@@ -64,7 +64,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
         } else {
             displayValue = 0
         }
-        historyDisplay.insertText("\(displayValue)\n")
+        history.text = brain.getHistory()
     }
     
     var displayValue: Double {
@@ -91,6 +91,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     @IBAction func clearView() {
         hasDecimalNumber = false
         displayValue = brain.clear()
+        history.text = brain.getHistory()
     }
 }
 
