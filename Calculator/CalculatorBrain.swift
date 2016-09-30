@@ -12,8 +12,9 @@ class CalculatorBrain
 {
     private enum Op: CustomStringConvertible {
         case Operand(Double)
-        case UnaryOperation(String, Double -> Double)
+        case UnaryOperation(String, (Double) -> Double)
         case BinaryOperation(String, (Double, Double) -> Double)
+        case Variable(String)
         
         var description: String {
             get {
@@ -24,6 +25,8 @@ class CalculatorBrain
                     return symbol
                 case .BinaryOperation(let symbol, _):
                     return symbol
+                case .Variable(let symbol):
+                    return "\(symbol)"
                 }
             }
         }
@@ -33,22 +36,68 @@ class CalculatorBrain
     
     
     private var knownOps = [String:Op]() //Dictionary
+    var variableValues = [String:Double]()
     
     init() {
         func learnOp(op: Op) {
             knownOps[op.description] = op
         }
-        learnOp(Op.BinaryOperation("+", +))
-        learnOp(Op.BinaryOperation("−") {$1 - $0})
-        learnOp(Op.BinaryOperation("×", *))
-        learnOp(Op.BinaryOperation("÷") {$1 / $0})
-        learnOp(Op.UnaryOperation("√", sqrt))
-        learnOp(Op.UnaryOperation("sin", sin))
-        learnOp(Op.UnaryOperation("cos", cos))
+        learnOp(op: Op.BinaryOperation("+", +))
+        learnOp(op: Op.BinaryOperation("−") {$1 - $0})
+        learnOp(op: Op.BinaryOperation("×", *))
+        learnOp(op: Op.BinaryOperation("÷") {$1 / $0})
+        learnOp(op: Op.UnaryOperation("√", sqrt))
+        learnOp(op: Op.UnaryOperation("sin", sin))
+        learnOp(op: Op.UnaryOperation("cos", cos))
         
     }
     
-    typealias PropertyList = AnyObject
+    private func getDescription(oldDescription: [String], ops: [Op]) -> (newDescription: [String], remainingsOps: [Op]) {
+        var newDescription = oldDescription
+        if !ops.isEmpty {
+            var remainingOps = ops
+            let op = remainingOps.removeFirst()
+            switch op {
+            case .Operand(_), .Variable(_):
+                newDescription.append(op.description)
+                return getDescription(oldDescription: newDescription, ops: remainingOps)
+            case .UnaryOperation(let symbol, _):
+                if !newDescription.isEmpty {
+                    let operand = newDescription.removeLast()
+                    newDescription.append(symbol + "(\(operand))")
+                    let (newestDescription, remainingOPs) = getDescription(oldDescription: newDescription, ops: remainingOps)
+                    return (newestDescription, remainingOPs)
+                }
+            case .BinaryOperation(let symbol, _):
+                if !newDescription.isEmpty {
+                    let lastOperand = newDescription.removeLast()
+                    if !newDescription.isEmpty {
+                        let firstOperand = newDescription.removeLast()
+                        if op.description == remainingOps.first?.description {
+                            newDescription.append("(\(firstOperand)" + symbol + "\(lastOperand))")
+                        } else {
+                            newDescription.append("\(firstOperand)" + symbol + "\(lastOperand)")
+                        }
+                        return getDescription(oldDescription: newDescription, ops: remainingOps)
+                    } else {
+                        newDescription.append("?" + symbol + "\(lastOperand)")
+                        return getDescription(oldDescription: newDescription, ops: remainingOps)
+                    }
+                } else {
+                    newDescription.append("?" + symbol + "?")
+                    return getDescription(oldDescription: newDescription, ops: remainingOps)
+                }
+            }
+        }
+        return (newDescription, ops)
+    }
+    
+    var description: String {
+        let (descriptions, _) = getDescription(oldDescription: [String](), ops: opStack)
+        return descriptions.joined(separator: ", ")
+    }
+    
+    /*typealias PropertyList = AnyObject
     
     var program: PropertyList {    //guaranteed to be a PropertyList
         get {
@@ -60,14 +109,14 @@ class CalculatorBrain
                 for opSymbol in opSymbols {
                     if let op = knownOps[opSymbol] {
                         newOpStack.append(op)
-                    } else if let operand = NSNumberFormatter().numberFromString(opSymbol)?.doubleValue {
+                    } else if let operand = NumberFormatter().number(from: opSymbol)?.doubleValue {
                         newOpStack.append(.Operand(operand))
                     }
                 }
                 opStack = newOpStack
             }
         }
-    }
+    }*/
     
     private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
         if !ops.isEmpty {
@@ -77,17 +126,23 @@ class CalculatorBrain
             case .Operand(let operand):
                 return (operand, remainingOps)
             case .UnaryOperation(_, let operation):
-                let operandEvaluation = evaluate(remainingOps)
+                let operandEvaluation = evaluate(ops: remainingOps)
                 if let operand = operandEvaluation.result {
                     return (operation(operand), operandEvaluation.remainingOps)
                 }
             case .BinaryOperation(_, let operation):
-                let op1Evaluation = evaluate(remainingOps)
+                let op1Evaluation = evaluate(ops: remainingOps)
                 if let operand1 = op1Evaluation.result {
-                    let op2Evaluation = evaluate(op1Evaluation.remainingOps)
+                    let op2Evaluation = evaluate(ops: op1Evaluation.remainingOps)
                     if let operand2 = op2Evaluation.result {
                         return (operation(operand1, operand2), op2Evaluation.remainingOps)
                     }
+                }
+            case .Variable(let symbol):
+                if let value = variableValues[symbol] {
+                    return (value, remainingOps)
+                } else {
+                    return (nil, remainingOps)
                 }
             }
         }
@@ -95,13 +150,18 @@ class CalculatorBrain
     }
     
     func evaluate() -> Double? {
-        let (result, remainder) = evaluate(opStack)
+        let (result, remainder) = evaluate(ops: opStack)
         print("\(opStack) = \(result) with \(remainder) left over")
         return result
     }
     
     func pushOperand(operand: Double) -> Double? {
         opStack.append(Op.Operand(operand))
+        return evaluate()
+    }
+    
+    func pushOperand(symbol: String) -> Double? {
+        opStack.append(Op.Variable(symbol))
         return evaluate()
     }
     
@@ -115,6 +175,9 @@ class CalculatorBrain
     func clear() -> Double {
         if !opStack.isEmpty {
             opStack.removeAll()
+        }
+        if !variableValues.isEmpty {
+            variableValues.removeAll()
         }
         return 0
     }
@@ -138,6 +201,7 @@ class CalculatorBrain
     }
     
     func getHistory() -> String{
-        return opStack.description
+        return "\(description)="
+        //return opStack.description
     }
 }

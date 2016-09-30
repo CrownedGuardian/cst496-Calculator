@@ -30,13 +30,13 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         if userIsInMiddleOfTypingANumber {
-            if brain.isPI(digit) {
+            if brain.isPI(digit: digit) {
                 enter()
                 displayValue = brain.getPI()
                 enter()
                 return
             }
-            else if brain.hasDecimalPoint(digit) {
+            else if brain.hasDecimalPoint(digit: digit) {
                 if hasDecimalNumber {
                     display.text = "Error"
                     return
@@ -46,7 +46,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
             }
             display.text = display.text! + digit
         } else {
-            if brain.isPI(digit) {
+            if brain.isPI(digit: digit) {
                 displayValue = brain.getPI()
                 enter()
                 return
@@ -59,20 +59,20 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     @IBAction func enter() {
         userIsInMiddleOfTypingANumber = false
         hasDecimalNumber = false
-        if let result = brain.pushOperand(displayValue) {
+        if let result = brain.pushOperand(operand: displayValue!) {
             displayValue = result
         } else {
-            displayValue = 0
+            displayValue = nil
         }
         history.text = brain.getHistory()
     }
     
-    var displayValue: Double {
+    var displayValue: Double? {
         get {
-            return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
+            return NumberFormatter().number(from: display.text!)!.doubleValue
         }
         set {
-            display.text = "\(newValue)"
+            display.text = "\(newValue!)"
             userIsInMiddleOfTypingANumber = false
         }
     }
@@ -81,17 +81,18 @@ class ViewController: UIViewController { //Superclass (Inheritance)
             enter()
         }
         if let operation = sender.currentTitle {
-            if let result = brain.performOperation(operation) {
+            if let result = brain.performOperation(symbol: operation) {
                 displayValue = result
             } else {
-                displayValue = 0
+                displayValue = nil
             }
         }
+        history.text = brain.getHistory()
     }
     @IBAction func clearView() {
         hasDecimalNumber = false
         displayValue = brain.clear()
-        history.text = brain.getHistory()
+        history.text = ""
     }
 }
 
