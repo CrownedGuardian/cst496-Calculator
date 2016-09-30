@@ -31,9 +31,9 @@ class ViewController: UIViewController { //Superclass (Inheritance)
         let digit = sender.currentTitle!
         if userIsInMiddleOfTypingANumber {
             if brain.isPI(digit: digit) {
-                enter()
-                displayValue = brain.getPI()
-                enter()
+                //enter()
+                displayValue = brain.pushConstant(symbol: digit)
+                //enter()
                 return
             }
             else if brain.hasDecimalPoint(digit: digit) {
@@ -47,8 +47,8 @@ class ViewController: UIViewController { //Superclass (Inheritance)
             display.text = display.text! + digit
         } else {
             if brain.isPI(digit: digit) {
-                displayValue = brain.getPI()
-                enter()
+                displayValue = brain.pushConstant(symbol: digit)
+                //enter()
                 return
             }
             display.text = digit
@@ -93,6 +93,16 @@ class ViewController: UIViewController { //Superclass (Inheritance)
         hasDecimalNumber = false
         displayValue = brain.clear()
         history.text = ""
+    }
+    @IBAction func setM(_ sender: UIButton) {
+        userIsInMiddleOfTypingANumber = false
+        brain.variableValues["M"] = displayValue
+    }
+    @IBAction func getM(_ sender: UIButton) {
+        if userIsInMiddleOfTypingANumber {
+            enter()
+        }
+        displayValue = brain.pushOperand(symbol: "M")
     }
 }
 

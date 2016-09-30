@@ -181,9 +181,17 @@
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Th-DO-W1t">
                                 <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                <state key="normal" title="M"/>
+                                <connections>
+                                    <action selector="getM:" destination="BYZ-38-t0r" eventType="touchUpInside" id="l1q-s2-jEi"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yZX-VI-8ks">
                                 <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                <state key="normal" title="→M"/>
+                                <connections>
+                                    <action selector="setM:" destination="BYZ-38-t0r" eventType="touchUpInside" id="NkJ-ph-dxX"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

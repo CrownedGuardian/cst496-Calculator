@@ -15,6 +15,7 @@ class CalculatorBrain
         case UnaryOperation(String, (Double) -> Double)
         case BinaryOperation(String, (Double, Double) -> Double)
         case Variable(String)
+        case Constant(String, Double)
         
         var description: String {
             get {
@@ -26,6 +27,8 @@ class CalculatorBrain
                 case .BinaryOperation(let symbol, _):
                     return symbol
                 case .Variable(let symbol):
+                    return "\(symbol)"
+                case .Constant(let symbol, _):
                     return "\(symbol)"
                 }
             }
@@ -49,7 +52,7 @@ class CalculatorBrain
         learnOp(op: Op.UnaryOperation("√", sqrt))
         learnOp(op: Op.UnaryOperation("sin", sin))
         learnOp(op: Op.UnaryOperation("cos", cos))
-        
+        learnOp(op: Op.Constant("π", M_PI))
     }
     
     private func getDescription(oldDescription: [String], ops: [Op]) -> (newDescription: [String], remainingsOps: [Op]) {
@@ -58,7 +61,7 @@ class CalculatorBrain
             var remainingOps = ops
             let op = remainingOps.removeFirst()
             switch op {
-            case .Operand(_), .Variable(_):
+            case .Operand(_), .Variable(_), .Constant(_, _):
                 newDescription.append(op.description)
                 return getDescription(oldDescription: newDescription, ops: remainingOps)
             case .UnaryOperation(let symbol, _):
@@ -74,9 +77,9 @@ class CalculatorBrain
                     if !newDescription.isEmpty {
                         let firstOperand = newDescription.removeLast()
                         if op.description == remainingOps.first?.description {
-                            newDescription.append("(\(firstOperand)" + symbol + "\(lastOperand))")
-                        } else {
                             newDescription.append("\(firstOperand)" + symbol + "\(lastOperand)")
+                        } else {
+                            newDescription.append("(\(firstOperand)" + symbol + "\(lastOperand))")
                         }
                         return getDescription(oldDescription: newDescription, ops: remainingOps)
                     } else {
@@ -144,6 +147,8 @@ class CalculatorBrain
                 } else {
                     return (nil, remainingOps)
                 }
+            case .Constant(_, let value):
+                return (value, remainingOps)
             }
         }
         return (nil, ops)
@@ -162,6 +167,13 @@ class CalculatorBrain
     
     func pushOperand(symbol: String) -> Double? {
         opStack.append(Op.Variable(symbol))
+        return evaluate()
+    }
+    
+    func pushConstant(symbol: String) -> Double? {
+        if let constant = knownOps[symbol] {
+            opStack.append(constant)
+        }
         return evaluate()
     }
     
