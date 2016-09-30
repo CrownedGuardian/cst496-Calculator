@@ -30,13 +30,13 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         if userIsInMiddleOfTypingANumber {
-            if brain.isPI(digit: digit) {
+            if brain.isPI(digit) {
                 //enter()
-                displayValue = brain.pushConstant(symbol: digit)
+                displayValue = brain.pushConstant(digit)
                 //enter()
                 return
             }
-            else if brain.hasDecimalPoint(digit: digit) {
+            else if brain.hasDecimalPoint(digit) {
                 if hasDecimalNumber {
                     display.text = "Error"
                     return
@@ -46,8 +46,8 @@ class ViewController: UIViewController { //Superclass (Inheritance)
             }
             display.text = display.text! + digit
         } else {
-            if brain.isPI(digit: digit) {
-                displayValue = brain.pushConstant(symbol: digit)
+            if brain.isPI(digit) {
+                displayValue = brain.pushConstant(digit)
                 //enter()
                 return
             }
@@ -59,7 +59,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     @IBAction func enter() {
         userIsInMiddleOfTypingANumber = false
         hasDecimalNumber = false
-        if let result = brain.pushOperand(operand: displayValue!) {
+        if let result = brain.pushOperand(displayValue!) {
             displayValue = result
         } else {
             displayValue = nil
@@ -69,7 +69,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
     
     var displayValue: Double? {
         get {
-            return NumberFormatter().number(from: display.text!)!.doubleValue
+            return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
         }
         set {
             display.text = "\(newValue!)"
@@ -81,7 +81,7 @@ class ViewController: UIViewController { //Superclass (Inheritance)
             enter()
         }
         if let operation = sender.currentTitle {
-            if let result = brain.performOperation(symbol: operation) {
+            if let result = brain.performOperation(operation) {
                 displayValue = result
             } else {
                 displayValue = nil
@@ -94,15 +94,15 @@ class ViewController: UIViewController { //Superclass (Inheritance)
         displayValue = brain.clear()
         history.text = ""
     }
-    @IBAction func setM(_ sender: UIButton) {
+    @IBAction func setM(sender: UIButton) {
         userIsInMiddleOfTypingANumber = false
         brain.variableValues["M"] = displayValue
     }
-    @IBAction func getM(_ sender: UIButton) {
+    @IBAction func getM(sender: UIButton) {
         if userIsInMiddleOfTypingANumber {
             enter()
         }
-        displayValue = brain.pushOperand(symbol: "M")
+        displayValue = brain.pushOperand("M")
     }
 }
 
