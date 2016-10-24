@@ -104,7 +104,7 @@ class CalculatorBrain
         return (newDescription, ops)
     }
     
-    var description: String {
+    var description: String? {
         let (descriptions, _) = getDescription([String](), ops: opStack)
         return descriptions.joinWithSeparator(", ")
     }

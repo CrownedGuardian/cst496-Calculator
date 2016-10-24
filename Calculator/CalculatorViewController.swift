@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController { //Superclass (Inheritance)
+class CalculatorViewController: UIViewController { //Superclass (Inheritance)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -103,6 +103,23 @@ class ViewController: UIViewController { //Superclass (Inheritance)
             enter()
         }
         displayValue = brain.pushOperand("M")
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if let identifier = segue.identifier {
+            switch identifier {
+            case "Show Graph":
+                if let vc = segue.destinationViewController as? GraphViewController {
+                    vc.brain = self.brain
+                    if let brainDescription = brain.description{
+                        let descriptionArray = brainDescription.characters.split(",")
+                        vc.graphTitle = String(descriptionArray.last)
+                    }
+                    
+                }
+            default: break
+            }
+        }
     }
 }
 
